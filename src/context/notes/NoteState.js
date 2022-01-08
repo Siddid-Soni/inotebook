@@ -35,14 +35,23 @@ const NoteState = (props)=>{
         })
         const json = await response.json()
 
-        setNotes(notes.concat([json]))
+        if (json.errors) {
+            let err = []
+            for (let i = 0; i < json.errors.length; i++) {
+                err.push(json.errors[i].msg)
+            }
+            return err
+        }
+        else {
+            setNotes(notes.concat([json]))
+        }
     }
 
 
     //edit note
     const editNote = async (id, title, description, tag)=>{
 
-        await fetch(`${host}/api/notes/updatenote/${id}`,{
+        const response = await fetch(`${host}/api/notes/updatenote/${id}`,{
             method: 'PUT',
             headers: {
                 'Accept': '*/*',
@@ -52,17 +61,29 @@ const NoteState = (props)=>{
             body: JSON.stringify({title,description,tag})
         })
 
-        let newNotes = JSON.parse(JSON.stringify(notes))
+        const json = await response.json()
 
-        for (let i = 0; i < notes.length; i++) {
-            if (newNotes[i]._id === id) {
-                newNotes[i].title = title
-                newNotes[i].description = description
-                newNotes[i].tag = tag
-                break
+        if (json.errors) {
+            let err = []
+            for (let i = 0; i < json.errors.length; i++) {
+                err.push(json.errors[i].msg)
             }
+            return err
         }
-        setNotes(newNotes)
+
+        else {
+            let newNotes = JSON.parse(JSON.stringify(notes))
+
+            for (let i = 0; i < notes.length; i++) {
+                if (newNotes[i]._id === id) {
+                    newNotes[i].title = title
+                    newNotes[i].description = description
+                    newNotes[i].tag = tag
+                    break
+                }
+            }
+            setNotes(newNotes)
+        }
     }
 
 

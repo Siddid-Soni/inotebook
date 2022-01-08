@@ -11,6 +11,7 @@ const Notes = () => {
 
     const ref = useRef(null)
     const refClose = useRef(null)
+    let err=[]
 
     useEffect(()=>{
         getNotes()
@@ -20,11 +21,28 @@ const Notes = () => {
     const updateNote = (currentNote) => {
         ref.current.click()
         setNote({id:currentNote._id, etitle: currentNote.title, edescription: currentNote.description, etag: currentNote.tag})
+        document.getElementById('etitl').innerHTML = ''
+        document.getElementById('edesc').innerHTML = ''
     }
 
-    const handleClick = ()=>{
-        editNote(note.id, note.etitle, note.edescription, note.etag)
-        refClose.current.click()
+    const handleClick = async ()=>{
+        err = await editNote(note.id, note.etitle, note.edescription, note.etag)
+
+        if (err) {
+            for (let i=0; i<err.length; i++) {
+                if (err[i] === 'title'){
+                    document.getElementById('etitl').innerHTML = 'title should be at least 3 characters'
+                }
+                if (err[i] === 'description') {
+                    document.getElementById('edesc').innerHTML = 'description should be at least 5 characters'
+                }
+            }
+        }
+        else{
+            document.getElementById('etitl').innerHTML = ''
+            document.getElementById('edesc').innerHTML = ''
+            refClose.current.click()
+        }
     }
 
     const onChange = (e)=>{
@@ -50,10 +68,12 @@ const Notes = () => {
                                 <legend className="form-label">Title</legend>
                                 <input type="text" onChange={onChange} className="form-control" id="etitle" name='etitle' value={note.etitle} />
                             </div>
+                            <small id="etitl" className='ms-1 text-danger'/>
                             <div className="mb-3">
                                 <legend className="form-label">Description</legend>
-                                <textarea className="form-control" onChange={onChange} id="edescription" name='edescription' value={note.edescription} rows="3"/>
+                                <textarea className="form-control" onChange={onChange} id="edescription" name='edescription' value={note.edescription} rows="3" />
                             </div>
+                            <small id="edesc" className='ms-1 text-danger'/>
                             <div className="mb-3">
                                 <legend className="form-label">Tag</legend>
                                 <input className="form-control" onChange={onChange} id="etag" name='etag' value={note.etag} />
@@ -67,9 +87,12 @@ const Notes = () => {
                 </div>
             </div>
         </div>
-        <div className='container my-3'>
+        <div className='row my-3'>
             <h1>Your notes</h1>
-            <div className='row row-cols-auto'>
+            <div className="mx-1 fs-4 container">
+                {notes.length===0 && 'No notes to display...'}
+            </div>
+            <div className='ms-1 mt-2 row row-cols-auto'>
                 {notes.map((note) => {
                     return <Noteitem key={note._id} updateNote={updateNote} note={note} />
                 })}
