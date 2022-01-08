@@ -20,14 +20,18 @@ const AddNote = () => {
     return (
         <div className='container my-3'>
             <h1>Add a note</h1>
-            <form action="" className='my-3'>
+            <form className='my-3'>
                 <div className="mb-3">
-                    <label htmlFor="title" className="form-label">Email address</label>
+                    <legend className="form-label">Title</legend>
                     <input type="text" className="form-control" id="title" name='title' placeholder="Enter title" onChange={onChange} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="description" className="form-label">Example textarea</label>
+                    <legend className="form-label">Description</legend>
                     <textarea className="form-control" id="description" name='description' onChange={onChange} rows="3"/>
+                </div>
+                <div className="mb-3">
+                    <legend className="form-label">Tag</legend>
+                    <input className="form-control" id="tag" name='tag' onChange={onChange} />
                 </div>
                 <button className='btn btn-primary' onClick={handleClick}>Add Note</button>
             </form>

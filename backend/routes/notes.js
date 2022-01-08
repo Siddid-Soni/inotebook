@@ -45,10 +45,10 @@ router.put('/updatenote/:id', fetchuser, async (req, res) => {
     const { title, description, tag } = req.body;
     try {
         // Create a newNote object
-        const newNote = {};
-        if (title) { newNote.title = title };
-        if (description) { newNote.description = description };
-        if (tag) { newNote.tag = tag };
+        const newNote = {}
+        if (title) { newNote.title = title }
+        if (description) { newNote.description = description }
+        if (tag) { newNote.tag = tag }
 
         // Find the note to be updated and update it
         let note = await Note.findById(req.params.id);
