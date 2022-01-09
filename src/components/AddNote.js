@@ -1,36 +1,48 @@
 import React, {useContext, useState} from 'react'
 import noteContext from '../context/notes/noteContext'
+import {useNavigate} from "react-router-dom";
 
-const AddNote = () => {
+const AddNote = (props) => {
 
     const context = useContext(noteContext)
     const { addNote } = context
-    let err = [];
 
     const [note, setNote] = useState({title: "", description:"", tag: "default"})
+    const history = useNavigate()
 
     const handleClick = async (e)=>{
         e.preventDefault()
-        err = await addNote(note.title, note.description, note.tag)
-        if (err) {
-            for (let i=0; i<err.length; i++) {
-                if (err[i] === 'title'){
+        let err = await addNote(note.title, note.description, note.tag)
+
+
+        console.log(err)
+        if (err && err.error==='invalidToken') {
+            localStorage.removeItem("_inoihb@%$21")
+            history("/login")
+        }
+
+
+        if (err && err.error === 'validation') {
+            for (let i = 0; i < err.errors.length; i++) {
+                if (err.errors[i] === 'title') {
                     document.getElementById('err').innerHTML = 'title should be at least 3 characters'
                 }
-                if (err[i] === 'description') {
+                if (err.errors[i] === 'description') {
                     document.getElementById('desc').innerHTML = 'description should be at least 5 characters'
                 }
             }
+
         }
-        else{
+        else {
             document.getElementById('err').innerHTML = ''
             document.getElementById('desc').innerHTML = ''
             document.getElementById('title').value = ''
             document.getElementById('description').value = ''
             document.getElementById('tag').value = ''
             setNote({title: "", description:"", tag: ""})
-
+            props.showAlert("Note Added Successfully!", "success")
         }
+
 
     }
 

@@ -2,8 +2,9 @@ import React, {useContext, useEffect, useRef, useState} from 'react'
 import noteContext from '../context/notes/noteContext'
 import AddNote from './AddNote'
 import Noteitem from './Noteitem'
+import {useNavigate} from 'react-router-dom'
 
-const Notes = () => {
+const Notes = (props) => {
 
     const context = useContext(noteContext)
     const { notes, getNotes, editNote } = context
@@ -13,8 +14,22 @@ const Notes = () => {
     const refClose = useRef(null)
     let err=[]
 
+    const history = useNavigate()
+
+    const fetchNotes = async () =>{
+        if (localStorage.getItem('_inoihb@%$21')) {
+            const response = await getNotes()
+            if (response.error === "invalidToken") {
+                history("/login")
+            }
+        }
+        else{
+            history("/login")
+        }
+    }
+
     useEffect(()=>{
-        getNotes()
+        fetchNotes()
         //eslint-disable-next-line
     },[])
     
@@ -28,12 +43,19 @@ const Notes = () => {
     const handleClick = async ()=>{
         err = await editNote(note.id, note.etitle, note.edescription, note.etag)
 
-        if (err) {
-            for (let i=0; i<err.length; i++) {
-                if (err[i] === 'title'){
+        console.log(err)
+        if (err && err.error==='invalidToken') {
+            refClose.current.click()
+            localStorage.removeItem("_inoihb@%$21")
+            history("/login")
+        }
+
+        if (err && err.error === 'validation') {
+            for (let i=0; i<err.errors.length; i++) {
+                if (err.errors[i] === 'title'){
                     document.getElementById('etitl').innerHTML = 'title should be at least 3 characters'
                 }
-                if (err[i] === 'description') {
+                if (err.errors[i] === 'description') {
                     document.getElementById('edesc').innerHTML = 'description should be at least 5 characters'
                 }
             }
@@ -42,6 +64,7 @@ const Notes = () => {
             document.getElementById('etitl').innerHTML = ''
             document.getElementById('edesc').innerHTML = ''
             refClose.current.click()
+            props.showAlert("Note updated Successfully!", "success")
         }
     }
 
@@ -51,8 +74,8 @@ const Notes = () => {
 
     return (
         <>
-        <AddNote />
-        <button ref={ref} type="button" className="btn btn-primary visually-hidden" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        <AddNote showAlert={props.showAlert}/>
+        <button ref={ref} type="button" className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#exampleModal">
             Launch demo modal
         </button>
         <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -94,7 +117,7 @@ const Notes = () => {
             </div>
             <div className='ms-1 mt-2 row row-cols-auto'>
                 {notes.map((note) => {
-                    return <Noteitem key={note._id} updateNote={updateNote} note={note} />
+                    return <Noteitem key={note._id} updateNote={updateNote} showAlert={props.showAlert} note={note} />
                 })}
             </div>
         </div>

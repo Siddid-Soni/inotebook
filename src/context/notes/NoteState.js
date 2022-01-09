@@ -1,10 +1,10 @@
 import {useState} from "react";
 import noteContext from "./noteContext";
-
 const NoteState = (props)=>{
 
     const host = 'http://localhost:5000'
     const [notes, setNotes] = useState([])
+
 
     //Get all notes
     const getNotes = async () => {
@@ -12,12 +12,15 @@ const NoteState = (props)=>{
           method: 'GET',
           headers: {
               'Accept': '*/*',
-              'auth-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjFkN2ZkNTIzMTk1OWRkODI3OTE4MmZmIn0sImlhdCI6MTY0MTY0MDcxOX0.r5OCS69X63Cpd75fwqx_VoxlCBWNPrJDi6yOYqZ7Y3Q'
+              'auth-token': localStorage.getItem('_inoihb@%$21')
           }
         })
 
         const notes = await response.json()
+        if (!notes.error) {
         setNotes(notes)
+        }
+        return notes
 
     }
 
@@ -29,21 +32,26 @@ const NoteState = (props)=>{
             headers: {
                 'Accept': '*/*',
                 'Content-Type': 'application/json',
-                'auth-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjFkN2ZkNTIzMTk1OWRkODI3OTE4MmZmIn0sImlhdCI6MTY0MTY0MDcxOX0.r5OCS69X63Cpd75fwqx_VoxlCBWNPrJDi6yOYqZ7Y3Q'
+                'auth-token': localStorage.getItem('_inoihb@%$21')
             },
             body: JSON.stringify({title,description,tag})
         })
         const json = await response.json()
 
         if (json.errors) {
-            let err = []
+            let err = {error:'validation',errors: []}
             for (let i = 0; i < json.errors.length; i++) {
-                err.push(json.errors[i].msg)
+                err.errors.push(json.errors[i].msg)
             }
             return err
         }
         else {
-            setNotes(notes.concat([json]))
+            if (!json.error) {
+                setNotes(notes.concat([json]))
+            }
+            else{
+                return json
+            }
         }
     }
 
@@ -56,7 +64,7 @@ const NoteState = (props)=>{
             headers: {
                 'Accept': '*/*',
                 'Content-Type': 'application/json',
-                'auth-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjFkN2ZkNTIzMTk1OWRkODI3OTE4MmZmIn0sImlhdCI6MTY0MTY0MDcxOX0.r5OCS69X63Cpd75fwqx_VoxlCBWNPrJDi6yOYqZ7Y3Q'
+                'auth-token': localStorage.getItem('_inoihb@%$21')
             },
             body: JSON.stringify({title,description,tag})
         })
@@ -64,42 +72,54 @@ const NoteState = (props)=>{
         const json = await response.json()
 
         if (json.errors) {
-            let err = []
+            let err = {error:'validation',errors: []}
             for (let i = 0; i < json.errors.length; i++) {
-                err.push(json.errors[i].msg)
+                err.errors.push(json.errors[i].msg)
             }
             return err
         }
 
         else {
-            let newNotes = JSON.parse(JSON.stringify(notes))
+            if (!json.error) {
+                let newNotes = JSON.parse(JSON.stringify(notes))
 
-            for (let i = 0; i < notes.length; i++) {
-                if (newNotes[i]._id === id) {
-                    newNotes[i].title = title
-                    newNotes[i].description = description
-                    newNotes[i].tag = tag
-                    break
+                for (let i = 0; i < notes.length; i++) {
+                    if (newNotes[i]._id === id) {
+                        newNotes[i].title = title
+                        newNotes[i].description = description
+                        newNotes[i].tag = tag
+                        break
+                    }
                 }
+                setNotes(newNotes)
             }
-            setNotes(newNotes)
+            else{
+                return json
+            }
         }
     }
 
 
     //delete note
     const deleteNote = async (id)=>{
-        await fetch(`${host}/api/notes/deletenote/${id}`,{
+        let response = await fetch(`${host}/api/notes/deletenote/${id}`,{
             method: "DELETE",
             headers: {
                 'Accept': '*/*',
                 'Content-Type': 'application/json',
-                'auth-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjFkN2ZkNTIzMTk1OWRkODI3OTE4MmZmIn0sImlhdCI6MTY0MTY0MDcxOX0.r5OCS69X63Cpd75fwqx_VoxlCBWNPrJDi6yOYqZ7Y3Q'
+                'auth-token': localStorage.getItem('_inoihb@%$21')
             }
         })
 
-        const newNotes = notes.filter((note)=>{return note._id !== id})
-        setNotes(newNotes)
+        let json = await response.json()
+
+        if (!json.error) {
+            const newNotes = notes.filter((note)=>{return note._id !== id})
+            setNotes(newNotes)
+        }
+        else{
+            return json
+        }
     }
 
 
